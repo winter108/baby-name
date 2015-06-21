@@ -36,3 +36,10 @@ text {
   fill-opacity: .125;
   shape-rendering: crispEdges;
 }
+.right{
+  float: right;
+}
+.search-box{
+  width: 30%;
+  display: inline;
+}
