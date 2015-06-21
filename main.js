@@ -12,8 +12,8 @@ d3.json("data.json", function(error, root) {
   render();
 });
 
-var margin = {top: 0, right: 40, bottom: 200, left: 40},
-    width = 1000 - margin.left - margin.right,
+var margin = {top: 20, right: 0, bottom: 200, left: 0},
+    width = 1140 - margin.left - margin.right,
     height = 1200 - margin.top - margin.bottom;
 
 var diameter = 960,
@@ -25,7 +25,19 @@ var bubble = d3.layout.pack()
     .size([diameter, diameter])
     .padding(1);
 
-var svg = d3.select("body").append("svg")
+var yearSliderSvg = d3.select("#year-slider").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", 80)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var percentileSliderSvg = d3.select("#percentile-slider").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", 80)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var svg = d3.select("#chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -133,7 +145,7 @@ function render() {
 }
 
 ////Brush
-var brushHeight = 100;
+var brushHeight = 30;
 
 var x = d3.time.scale()
     .domain([new Date(1880, 1, 1), new Date(2014, 12, 31)])
@@ -145,36 +157,21 @@ var brush = d3.svg.brush()
     .on("brush", brushed)
     .on("brushend", brushEnd);
 
-svg.append("rect")
+yearSliderSvg.append("rect")
     .attr("class", "grid-background")
     .attr("width", width)
     .attr("height", brushHeight);
 
-svg.append("g")
+yearSliderSvg.append("g")
     .attr("class", "x grid")
     .attr("transform", "translate(0," + brushHeight + ")")
     .call(d3.svg.axis()
         .scale(x)
         .orient("bottom")
         .ticks(d3.time.year, 5)
-        .tickSize(-brushHeight)
-        .tickFormat(""))
-  .selectAll(".tick")
-    .classed("minor", function(d) { return d.getYear(); });
+        .tickSize(-brushHeight));
 
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + brushHeight + ")")
-    .call(d3.svg.axis()
-      .scale(x)
-      .orient("bottom")
-      .ticks(d3.time.year, 5)
-      .tickPadding(0))
-  .selectAll("text")
-    .attr("x", 6)
-    .style("text-anchor", null);
-
-var gBrush = svg.append("g")
+var gBrush = yearSliderSvg.append("g")
     .attr("class", "brush")
     .call(brush);
 
@@ -218,7 +215,7 @@ function brushEnd() {
   render();
 }
 
-var percentileBrushHeight = 1000;
+var percentileBrushHeight = 20;
 
 var percentileX = d3.scale.linear()
     .domain([0, 100])
@@ -230,13 +227,13 @@ var percentileBrush = d3.svg.brush()
     .on("brush", percentileBrushed)
     .on("brushend", percentileBrushEnd);
 
-svg.append("rect")
+percentileSliderSvg.append("rect")
     .attr("class", "grid-background")
     .attr("width", width)
     .attr("height", brushHeight)
     .attr("y", percentileBrushHeight - brushHeight);
 
-svg.append("g")
+percentileSliderSvg.append("g")
     .attr("class", "x grid")
     .attr("transform", "translate(0," + percentileBrushHeight + ")")
     .call(d3.svg.axis()
@@ -244,18 +241,8 @@ svg.append("g")
         .orient("bottom")
         .tickSize(-brushHeight));
 
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform", "translate(0," + percentileBrushHeight + ")")
-    .call(d3.svg.axis()
-      .scale(percentileX)
-      .orient("bottom")
-      .tickPadding(0))
-  .selectAll("text")
-    .attr("x", 6)
-    .style("text-anchor", null);
 
-var gPercentileBrush = svg.append("g")
+var gPercentileBrush = percentileSliderSvg.append("g")
     .attr("class", "brush")
     .call(percentileBrush);
 
