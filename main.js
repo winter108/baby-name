@@ -17,6 +17,7 @@ var margin = {top: 20, right: 20, bottom: 200, left: 20},
     height = 1000 - margin.top - margin.bottom;
 
 var yearSliderSvgHeight = 80,
+    yearSliderBrushHeight = 30;
     percentileSliderSvgHeight = 80,
     percentileSliderSvgWidth= 500;
 
@@ -154,8 +155,6 @@ function render() {
 }
 
 ////Brush
-var yearSliderbrushHeight = 30;
-
 var x = d3.time.scale()
     .domain([new Date(1880, 1, 1), new Date(2014, 12, 31)])
     .range([0, width]);
@@ -169,27 +168,27 @@ var brush = d3.svg.brush()
 yearSliderSvg.append("rect")
     .attr("class", "grid-background")
     .attr("width", width)
-    .attr("height", yearSliderbrushHeight);
+    .attr("height", yearSliderBrushHeight);
 
 yearSliderSvg.append("g")
     .attr("class", "x grid")
-    .attr("transform", "translate(0," + yearSliderbrushHeight + ")")
+    .attr("transform", "translate(0," + yearSliderBrushHeight + ")")
     .call(d3.svg.axis()
         .scale(x)
         .orient("bottom")
         .ticks(d3.time.year, 5)
-        .tickSize(-yearSliderbrushHeight));
+        .tickSize(-yearSliderBrushHeight));
 
 var gBrush = yearSliderSvg.append("g")
     .attr("class", "brush")
     .call(brush);
 
 gBrush.selectAll(".resize").append("path")
-    .attr("transform", "translate(0," +  yearSliderbrushHeight / 2 + ")")
+    .attr("transform", "translate(0," +  yearSliderBrushHeight / 2 + ")")
     .attr("d", arc);
 
 gBrush.selectAll("rect")
-    .attr("height", yearSliderbrushHeight);
+    .attr("height", yearSliderBrushHeight);
 
 function brushed() {
   console.log("--brushed----");
