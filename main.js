@@ -244,7 +244,7 @@ percentileSliderSvg.append("rect")
     .attr("class", "grid-background")
     .attr("width", small_width)
     .attr("height", percentileBrushHeight)
-    .attr("y", percentileMargin - brushHeight_mini);
+    .attr("y", percentileMargin - percentileBrushHeight);
 
 percentileSliderSvg.append("g")
     .attr("class", "x grid")
