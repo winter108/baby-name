@@ -15,9 +15,10 @@ d3.json("data.json", function(error, root) {
 var margin = {top: 20, right: 20, bottom: 200, left: 20},
     width = 1140 - margin.left - margin.right,
     height = 1000 - margin.top - margin.bottom;
-var small_height= 80,
-    mini_height= 50,
-    small_width= 500;
+
+var yearSliderSvgHeight = 80,
+    percentileSliderSvgHeight = 80,
+    percentileSliderSvgWidth= 500;
 
 var diameter = 960,
     format = d3.format(",d"),
@@ -29,19 +30,19 @@ var bubble = d3.layout.pack()
     .padding(1);
 
 var arc = d3.svg.arc()
-    .outerRadius( 30/ 2)
+    .outerRadius(30 / 2)
     .startAngle(0)
     .endAngle(function(d, i) { return i ? -Math.PI : Math.PI; });
 
 var yearSliderSvg = d3.select("#year-slider").append("svg")
     .attr("width", width + margin.left + margin.right)
-    .attr("height", small_height)
+    .attr("height", yearSliderSvgHeight)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var percentileSliderSvg = d3.select("#percentile-slider").append("svg")
-    .attr("width", small_width + margin.left + margin.right)
-    .attr("height", small_height)
+    .attr("width", percentileSliderSvgWidth + margin.left + margin.right)
+    .attr("height", percentileSliderSvgHeight)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -232,7 +233,7 @@ var percentileBrushHeight = 10;
 
 var percentileX = d3.scale.linear()
     .domain([0, 100])
-    .range([0, small_width]);
+    .range([0, percentileSliderSvgWidth]);
 
 var percentileBrush = d3.svg.brush()
     .x(percentileX)
@@ -242,7 +243,7 @@ var percentileBrush = d3.svg.brush()
 
 percentileSliderSvg.append("rect")
     .attr("class", "grid-background")
-    .attr("width", small_width)
+    .attr("width", percentileSliderSvgWidth)
     .attr("height", percentileBrushHeight)
     .attr("y", percentileMargin - percentileBrushHeight);
 
