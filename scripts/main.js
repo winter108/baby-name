@@ -28,12 +28,52 @@ var bubble = d3.layout.pack()
     .size([diameter, diameter])
     .padding(1);
 
+var percentileSliderSvg = d3.select("#percentile-slider").append("svg")
+    .attr("width", percentileSliderSvgWidth + margin.left + margin.right)
+    .attr("height", percentileSliderSvgHeight)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 var svg = d3.select("#chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+var percentileMargin = 20;
+var percentileBrushHeight = 10;
+
+var percentileX = d3.scale.linear()
+    .domain([0, 100])
+    .range([0, percentileSliderSvgWidth]);
+
+var percentileBrush = d3.svg.brush()
+    .x(percentileX)
+    .extent(currentPercentileFilter)
+    .on("brush", percentileBrushed)
+    .on("brushend", percentileBrushEnd);
+
+percentileSliderSvg.append("rect")
+    .attr("class", "grid-background")
+    .attr("width", percentileSliderSvgWidth)
+    .attr("height", percentileBrushHeight)
+    .attr("y", percentileMargin - percentileBrushHeight);
+
+percentileSliderSvg.append("g")
+    .attr("class", "x grid")
+    .attr("transform", "translate(0," + percentileMargin + ")")
+    .call(d3.svg.axis()
+        .scale(percentileX)
+        .orient("bottom")
+        .tickSize(-percentileBrushHeight));
+
+var gPercentileBrush = percentileSliderSvg.append("g")
+    .attr("class", "brush")
+    .call(percentileBrush);
+
+gPercentileBrush.selectAll("rect")
+    .attr("y", percentileMargin - percentileBrushHeight)
+    .attr("height", percentileBrushHeight);
 
 function search() {
   currentSearchText = document.querySelector("#search").value;
@@ -134,5 +174,15 @@ function render() {
           return d.n.substring(0, d.r / 3);
         });
     console.log("Render finishes!");
+}
+
+function percentileBrushed() {
+  console.log("--percentileBrushed----");
+}
+
+function percentileBrushEnd() {
+  var extent0 = percentileBrush.extent();
+  currentPercentileFilter = [extent0[0], extent0[1]];
+  render();
 }
 
