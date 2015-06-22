@@ -1,7 +1,7 @@
 var filteredData;
 var currentData;
 var jsonData;
-var currentPercentileFilter = [0, 100];
+var currentPercentileFilter = [90, 100];
 var currentYearFilter = [2014];
 var currentSearchText = "";
 var currentGenderFilter = [true, true];
@@ -12,9 +12,12 @@ d3.json("data.json", function(error, root) {
   render();
 });
 
-var margin = {top: 20, right: 0, bottom: 200, left: 0},
+var margin = {top: 20, right: 20, bottom: 200, left: 20},
     width = 1140 - margin.left - margin.right,
-    height = 1200 - margin.top - margin.bottom;
+    height = 1000 - margin.top - margin.bottom;
+var small_height= 80,
+    mini_height= 50,
+    small_width= 500;
 
 var diameter = 960,
     format = d3.format(",d"),
@@ -25,15 +28,20 @@ var bubble = d3.layout.pack()
     .size([diameter, diameter])
     .padding(1);
 
+var arc = d3.svg.arc()
+    .outerRadius( 30/ 2)
+    .startAngle(0)
+    .endAngle(function(d, i) { return i ? -Math.PI : Math.PI; });
+
 var yearSliderSvg = d3.select("#year-slider").append("svg")
     .attr("width", width + margin.left + margin.right)
-    .attr("height", 80)
+    .attr("height", small_height)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 var percentileSliderSvg = d3.select("#percentile-slider").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", 80)
+    .attr("width", small_width + margin.left + margin.right)
+    .attr("height", small_height)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -145,7 +153,7 @@ function render() {
 }
 
 ////Brush
-var brushHeight = 30;
+var yearSliderbrushHeight = 30;
 
 var x = d3.time.scale()
     .domain([new Date(1880, 1, 1), new Date(2014, 12, 31)])
@@ -160,23 +168,27 @@ var brush = d3.svg.brush()
 yearSliderSvg.append("rect")
     .attr("class", "grid-background")
     .attr("width", width)
-    .attr("height", brushHeight);
+    .attr("height", yearSliderbrushHeight);
 
 yearSliderSvg.append("g")
     .attr("class", "x grid")
-    .attr("transform", "translate(0," + brushHeight + ")")
+    .attr("transform", "translate(0," + yearSliderbrushHeight + ")")
     .call(d3.svg.axis()
         .scale(x)
         .orient("bottom")
         .ticks(d3.time.year, 5)
-        .tickSize(-brushHeight));
+        .tickSize(-yearSliderbrushHeight));
 
 var gBrush = yearSliderSvg.append("g")
     .attr("class", "brush")
     .call(brush);
 
+gBrush.selectAll(".resize").append("path")
+    .attr("transform", "translate(0," +  yearSliderbrushHeight / 2 + ")")
+    .attr("d", arc);
+
 gBrush.selectAll("rect")
-    .attr("height", brushHeight);
+    .attr("height", yearSliderbrushHeight);
 
 function brushed() {
   console.log("--brushed----");
@@ -215,31 +227,32 @@ function brushEnd() {
   render();
 }
 
-var percentileBrushHeight = 20;
+var percentileMargin = 20;
+var percentileBrushHeight = 10;
 
 var percentileX = d3.scale.linear()
     .domain([0, 100])
-    .range([0, width]);
+    .range([0, small_width]);
 
 var percentileBrush = d3.svg.brush()
     .x(percentileX)
-    .extent([0, 100])
+    .extent(currentPercentileFilter)
     .on("brush", percentileBrushed)
     .on("brushend", percentileBrushEnd);
 
 percentileSliderSvg.append("rect")
     .attr("class", "grid-background")
-    .attr("width", width)
-    .attr("height", brushHeight)
-    .attr("y", percentileBrushHeight - brushHeight);
+    .attr("width", small_width)
+    .attr("height", percentileBrushHeight)
+    .attr("y", percentileMargin - brushHeight_mini);
 
 percentileSliderSvg.append("g")
     .attr("class", "x grid")
-    .attr("transform", "translate(0," + percentileBrushHeight + ")")
+    .attr("transform", "translate(0," + percentileMargin + ")")
     .call(d3.svg.axis()
         .scale(percentileX)
         .orient("bottom")
-        .tickSize(-brushHeight));
+        .tickSize(-percentileBrushHeight));
 
 
 var gPercentileBrush = percentileSliderSvg.append("g")
@@ -247,8 +260,8 @@ var gPercentileBrush = percentileSliderSvg.append("g")
     .call(percentileBrush);
 
 gPercentileBrush.selectAll("rect")
-    .attr("y", percentileBrushHeight - brushHeight)
-    .attr("height", brushHeight);
+    .attr("y", percentileMargin - percentileBrushHeight)
+    .attr("height", percentileBrushHeight);
 
 function percentileBrushed() {
   console.log("--percentileBrushed----");
