@@ -1,3 +1,8 @@
+body{
+ 
+  font-family: 'Roboto', sans-serif;
+
+}
 text {
   font: 10px sans-serif;
 }
@@ -39,7 +44,10 @@ text {
 .right{
   float: right;
 }
+.left{
+  float: left;
+}
 .search-box{
-  width: 30%;
+  width: 200px;
   display: inline;
 }
