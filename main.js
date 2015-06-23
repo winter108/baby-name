@@ -1,10 +1,12 @@
 var filteredData;
 var currentData;
 var jsonData;
+var yearRanges = d3.range(1880,2015);
 var currentPercentileFilter = [90, 100];
 var currentYearFilter = [2014];
 var currentSearchText = "";
 var currentGenderFilter = [true, true];
+var uniqueNameCount = {};
 
 d3.json("data.json", function(error, root) {
   if (error) throw error;
@@ -33,7 +35,6 @@ var svg = d3.select("#chart").append("svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
 function search() {
   currentSearchText = document.querySelector("#search").value;
@@ -81,13 +82,16 @@ function processData(years, searchText) {
       var name = node["_"]["n"];
       var maleCount = 0;
       var femaleCount = 0;
-      _.forEach(years, function(year) {
-          if(currentGenderFilter[0] && node["_"]["c"]["0"][year] !== undefined) {
-            maleCount += parseInt(node["_"]["c"]["0"][year]);
-          }
-          if(currentGenderFilter[1] && node["_"]["c"]["1"][year] !== undefined) {
-            femaleCount += parseInt(node["_"]["c"]["1"][year]);
-          }
+      _.forEach(yearRanges, function(year) {
+
+        if(currentGenderFilter[0] && node["_"]["c"]["0"][year] !== undefined) {
+          uniqueNameCount[year] = uniqueNameCount[year] === undefined ? 1 : uniqueNameCount[year] + 1;
+          maleCount += parseInt(node["_"]["c"]["0"][year]);
+        }
+        if(currentGenderFilter[1] && node["_"]["c"]["1"][year] !== undefined) {
+          uniqueNameCount[year] = uniqueNameCount[year] === undefined ? 1 : uniqueNameCount[year] + 1;
+          femaleCount += parseInt(node["_"]["c"]["1"][year]);
+        }
       })
       if(maleCount > 0) {
         result.push({ n: name, g: 'M', value: maleCount});
@@ -97,6 +101,7 @@ function processData(years, searchText) {
       }
     }
   }
+  YearChart.render(uniqueNameCount);
   console.log("---finishing create years date for " + years);
   return result;
 }

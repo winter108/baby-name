@@ -1,10 +1,11 @@
 var filteredData;
 var currentData;
 var jsonData;
-var currentPercentileFilter = [90, 100];
+var yearRanges = d3.range(1880,2015);
 var currentYearFilter = [2014];
 var currentSearchText = "";
 var currentGenderFilter = [true, true];
+var uniqueNameCount = {};
 
 d3.json("data.json", function(error, root) {
   if (error) throw error;
@@ -28,52 +29,11 @@ var bubble = d3.layout.pack()
     .size([diameter, diameter])
     .padding(1);
 
-var percentileSliderSvg = d3.select("#percentile-slider").append("svg")
-    .attr("width", percentileSliderSvgWidth + margin.left + margin.right)
-    .attr("height", percentileSliderSvgHeight)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 var svg = d3.select("#chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-var percentileMargin = 20;
-var percentileBrushHeight = 10;
-
-var percentileX = d3.scale.linear()
-    .domain([0, 100])
-    .range([0, percentileSliderSvgWidth]);
-
-var percentileBrush = d3.svg.brush()
-    .x(percentileX)
-    .extent(currentPercentileFilter)
-    .on("brush", percentileBrushed)
-    .on("brushend", percentileBrushEnd);
-
-percentileSliderSvg.append("rect")
-    .attr("class", "grid-background")
-    .attr("width", percentileSliderSvgWidth)
-    .attr("height", percentileBrushHeight)
-    .attr("y", percentileMargin - percentileBrushHeight);
-
-percentileSliderSvg.append("g")
-    .attr("class", "x grid")
-    .attr("transform", "translate(0," + percentileMargin + ")")
-    .call(d3.svg.axis()
-        .scale(percentileX)
-        .orient("bottom")
-        .tickSize(-percentileBrushHeight));
-
-var gPercentileBrush = percentileSliderSvg.append("g")
-    .attr("class", "brush")
-    .call(percentileBrush);
-
-gPercentileBrush.selectAll("rect")
-    .attr("y", percentileMargin - percentileBrushHeight)
-    .attr("height", percentileBrushHeight);
 
 function search() {
   currentSearchText = document.querySelector("#search").value;
@@ -102,7 +62,7 @@ function getPercentileData(data, filterArray) {
 
 function processData(years, searchText) {
   console.log("create years date for " + years);
-
+  uniqueNameCount = {};
   var currentNode = jsonData;
   var result = [];
   var queue = new Queue();
@@ -121,13 +81,19 @@ function processData(years, searchText) {
       var name = node["_"]["n"];
       var maleCount = 0;
       var femaleCount = 0;
-      _.forEach(years, function(year) {
-          if(currentGenderFilter[0] && node["_"]["c"]["0"][year] !== undefined) {
+      _.forEach(yearRanges, function(year) {
+        if(currentGenderFilter[0] && node["_"]["c"]["0"][year] !== undefined) {
+          uniqueNameCount[year] = uniqueNameCount[year] === undefined ? 1 : uniqueNameCount[year] + 1;
+          if(years.indexOf(year) !== -1) {
             maleCount += parseInt(node["_"]["c"]["0"][year]);
           }
-          if(currentGenderFilter[1] && node["_"]["c"]["1"][year] !== undefined) {
+        }
+        if(currentGenderFilter[1] && node["_"]["c"]["1"][year] !== undefined) {
+          uniqueNameCount[year] = uniqueNameCount[year] === undefined ? 1 : uniqueNameCount[year] + 1;
+          if(years.indexOf(year) !== -1) {
             femaleCount += parseInt(node["_"]["c"]["1"][year]);
           }
+        }
       })
       if(maleCount > 0) {
         result.push({ n: name, g: 'M', value: maleCount});
@@ -137,6 +103,7 @@ function processData(years, searchText) {
       }
     }
   }
+  YearChart.render(uniqueNameCount);
   console.log("---finishing create years date for " + years);
   return result;
 }
@@ -174,15 +141,5 @@ function render() {
           return d.n.substring(0, d.r / 3);
         });
     console.log("Render finishes!");
-}
-
-function percentileBrushed() {
-  console.log("--percentileBrushed----");
-}
-
-function percentileBrushEnd() {
-  var extent0 = percentileBrush.extent();
-  currentPercentileFilter = [extent0[0], extent0[1]];
-  render();
 }
 
